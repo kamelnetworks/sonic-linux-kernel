@@ -19,6 +19,13 @@ if [ $# -ge 3 ]; then
     SECURE_UPGRADE_KERNEL_CAFILE=$3
 fi
 
+# Avoid generating full kernel debug information for production builds.
+# Keep all debug settings when SONIC_DEBUGGING_ON=y.
+if [ "${SONIC_DEBUGGING_ON}" != "y" ]; then
+    sed -i '/^CONFIG_DEBUG_INFO[=_]/d; /^# CONFIG_DEBUG_INFO[ _]/d' debian/config.local/${ARCH}/config.sonic
+    printf '\nCONFIG_DEBUG_INFO_NONE=y\n# CONFIG_DEBUG_INFO is not set\n' >> debian/config.local/${ARCH}/config.sonic
+fi
+
 #  Secure Boot support
 echo "Secure Boot params: SECURE_UPGRADE_MODE=${SECURE_UPGRADE_MODE}, SECURE_UPGRADE_KERNEL_CAFILE=${SECURE_UPGRADE_KERNEL_CAFILE}"
 if [ ${SECURE_UPGRADE_MODE} == "dev" -o ${SECURE_UPGRADE_MODE} == "prod" ]; then
